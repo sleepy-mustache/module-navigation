@@ -147,6 +147,10 @@ class Builder {
 				}
 			}
 
+			if (!isset($page->class)) {
+				$page->class = "";
+			}
+
 			if (isset($page->pages)) {
 				$page->class = $page->class . " has-children";
 			}
