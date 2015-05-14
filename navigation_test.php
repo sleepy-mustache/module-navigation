@@ -39,23 +39,23 @@ class TestOfNavigation extends UnitTestCase {
 
 	function testNav() {
 		$nav = $this->nav->show();
-		$this->assertEqual($nav,'<ul><li><a target="_blank" href="1.html">1</a><ul><li><a href="1.1.html">1.1</a></li><li><a href="1.2.html">1.2</a></li></ul></li><li class="second"><a id="second" href="2.html">2</a></li></ul>');
+		$this->assertEqual($nav,'<ul class="menu"><li class="has-children"><a target="_blank" href="1.html">1</a><ul class="submenu"><li><a href="1.1.html">1.1</a></li><li><a href="1.2.html">1.2</a></li></ul></li><li class="second"><a id="second" href="2.html">2</a></li></ul>');
 	}
 
 	function testTarget() {
 		$nav = $this->nav->show();
-		$this->assertEqual($nav,'<ul><li><a target="_blank" href="1.html">1</a><ul><li><a href="1.1.html">1.1</a></li><li><a href="1.2.html">1.2</a></li></ul></li><li class="second"><a id="second" href="2.html">2</a></li></ul>');
+		$this->assertEqual($nav,'<ul class="menu"><li class="has-children"><a target="_blank" href="1.html">1</a><ul class="submenu"><li><a href="1.1.html">1.1</a></li><li><a href="1.2.html">1.2</a></li></ul></li><li class="second"><a id="second" href="2.html">2</a></li></ul>');
 	}
 
 	function testActive() {
 		$this->nav->setCurrent('1.html');
 		$nav = $this->nav->show();
-		$this->assertEqual($nav,'<ul><li class="active"><a target="_blank" href="1.html">1</a><ul><li><a href="1.1.html">1.1</a></li><li><a href="1.2.html">1.2</a></li></ul></li><li class="second"><a id="second" href="2.html">2</a></li></ul>');
+		$this->assertEqual($nav,'<ul class="menu"><li class="has-children active"><a target="_blank" href="1.html">1</a><ul class="submenu"><li><a href="1.1.html">1.1</a></li><li><a href="1.2.html">1.2</a></li></ul></li><li class="second"><a id="second" href="2.html">2</a></li></ul>');
 	}
 
 	function testSubActive() {
 		$this->nav->setCurrent('1.1.html');
 		$nav = $this->nav->show();
-		$this->assertEqual($nav,'<ul><li class="active"><a target="_blank" href="1.html">1</a><ul><li class="active"><a href="1.1.html">1.1</a></li><li><a href="1.2.html">1.2</a></li></ul></li><li class="second"><a id="second" href="2.html">2</a></li></ul>');
+		$this->assertEqual($nav,'<ul class="menu"><li class="has-children active-child"><a target="_blank" href="1.html">1</a><ul class="submenu"><li class="active"><a href="1.1.html">1.1</a></li><li><a href="1.2.html">1.2</a></li></ul></li><li class="second"><a id="second" href="2.html">2</a></li></ul>');
 	}
 }
