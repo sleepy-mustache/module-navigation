@@ -63,6 +63,11 @@ class Builder {
 	private $data;
 
 	/**
+	 * mixed Level
+	 */
+	private $_level = 0;
+
+	/**
 	 * Constructor
 	 * @param string $json json data containing the Navigation data
 	 */
@@ -84,7 +89,7 @@ class Builder {
 	/**
 	 * Is this page or its children an active page?
 	 * @param  object  $page An object containing page data
-	 * @return boolean       true if this page, or its children are active
+	 * @return int     0=none;1=active;2=activeChild
 	 * @private
 	 */
 	private function hasActive($page) {
@@ -92,7 +97,7 @@ class Builder {
 		if (isset($page->pages)) {
 			foreach ($page->pages as $subPage) {
 				if ($this->hasActive($subPage)) {
-					return true;
+					return 2;
 				}
 			}
 		}
@@ -103,7 +108,7 @@ class Builder {
 				\Sleepy\Hook::addAction('navigation_has_active');
 			}
 
-			return true;
+			return 1;
 		}
 
 		// no match...
@@ -111,7 +116,7 @@ class Builder {
 			\Sleepy\Hook::addAction('navigation_no_active');
 		}
 
-		return false;
+		return 0;
 	}
 
 	/**
@@ -120,14 +125,18 @@ class Builder {
 	 * @return string        The string containing the unordered list
 	 */
 	private function renderNav($pages, $class="") {
-		$class = trim($class);
+		$this->_level = $this->_level + 1;
 		$buffer = array();
 
-		if (strlen($class) > 1) {
-			$buffer[] = "<ul class=\"{$class}\">";
+		if ($this->_level > 1) {
+			$class = "submenu " . $class;
 		} else {
-			$buffer[] = "<ul>";
+			$class = "menu " . $class;
 		}
+
+		$class = trim($class);
+
+		$buffer[] = "<ul class=\"{$class}\">";
 
 		foreach ($pages as $page) {
 			if (class_exists('\Sleepy\Hook')) {
@@ -138,7 +147,11 @@ class Builder {
 				}
 			}
 
-			$active		= ($this->hasActive($page))	? true								: false;
+			if (isset($page->pages)) {
+				$page->class = $page->class . " has-children";
+			}
+
+			$active		= $this->hasActive($page);
 			$classy		= (!empty($page->class))	? true								: false;
 			$track		= (!empty($page->track))	? "data-track=\"{$page->track}\" "	: "";
 			$id			= (!empty($page->id))		? "id=\"{$page->id}\" "				: "";
@@ -151,8 +164,12 @@ class Builder {
 			if ($active || $classy) {
 				$buffer[] = " class=\"";
 
-				if ($active) {
-					$page->class = "active ";
+				switch ($active) {
+				case 1:
+					$page->class = $page->class . " active";
+					break;
+				case 2:
+					$page->class = $page->class . " active-child";
 				}
 
 				$buffer[] = trim($page->class);
