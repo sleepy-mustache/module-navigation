@@ -1,8 +1,8 @@
 # Navigation 
 
-* Date:    June 16, 2014
+* Date:    May 14, 2015
 * Author:  Jaime A. Rodriguez <hi.i.am.jaime@gmail.com>
-* Version: 1.4
+* Version: 1.5
 * License: http://opensource.org/licenses/MIT
 
 Creates a Navigation UL based on a JSON file. Uses JSON to structure navigation pages and attributes. It can detect what page is active and assign classes to them for special treatment.
@@ -40,6 +40,10 @@ Creates a Navigation UL based on a JSON file. Uses JSON to structure navigation 
 ~~~
 
 ## Changelog
+
+### Version 1.5
+
+* Added the menu, submenu, and .active.child classes
 
 ### Version 1.4
 
