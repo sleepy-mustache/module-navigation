@@ -72,11 +72,13 @@ class Builder {
 	 * @param string $json json data containing the Navigation data
 	 */
 	public function __construct($json='') {
-		if (class_exists('\Sleepy\Hook')) {
-			$json = \Sleepy\Hook::addFilter('navigation_raw_json', $json);
-		}
+		if (!is_object($json)) {
+			if (class_exists('\Sleepy\Hook')) {
+				$json = \Sleepy\Hook::addFilter('navigation_raw_json', $json);
+			}
 
-		$json = json_decode($json);
+			$json = json_decode($json);
+		}
 
 		if (class_exists('\Sleepy\Hook')) {
 			$json = \Sleepy\Hook::addFilter('navigation_rendered_json', $json);
