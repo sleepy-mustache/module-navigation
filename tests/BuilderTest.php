@@ -13,7 +13,7 @@
  * @link     https://sleepymustache.com
  */
 
-require_once dirname(__FILE__) . '/../../sleepy/core/Loader.php';
+require_once dirname(__FILE__) . '/../../../sleepy/core/Loader.php';
 
 use PHPUnit\Framework\TestCase;
 use Sleepy\Core\SM;
@@ -22,11 +22,11 @@ use Sleepy\Core\Loader;
 use Module\Navigation\Builder;
 
 Loader::register();
-Loader::addNamespace('Sleepy', dirname(__FILE__) . '/../../sleepy');
-Loader::addNamespace('Sleepy\Core', dirname(__FILE__) . '/../../sleepy/core');
-Loader::addNamespace('Module', dirname(__FILE__) . '/../../modules');
+Loader::addNamespace('Sleepy', dirname(__FILE__) . '/../../../sleepy');
+Loader::addNamespace('Sleepy\Core', dirname(__FILE__) . '/../../../sleepy/core');
+Loader::addNamespace('Module', dirname(__FILE__) . '/../../../modules');
 
-require_once dirname(__FILE__) . '/../../../settings.php';
+require_once dirname(__FILE__) . '/../../../../settings.php';
 
 /**
  * Builder Unit Test
