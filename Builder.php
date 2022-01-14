@@ -1,7 +1,7 @@
 <?php
 /**
- * The Builder class used in the Navigation Module to build a dynamic navigation using
- * JSON.
+ * The Builder class used in the Navigation Module to build a dynamic navigation
+ * using JSON.
  *
  * PHP version 7.0.0
  *
@@ -21,8 +21,8 @@ use Sleepy\Core\Module;
 /**
  * Creates a Navigation UL based on a JSON file
  *
- * Uses JSON to structure navigation pages and attributes. It can
- * detect what page is active and assign classes to them for special treatment.
+ * Uses JSON to structure navigation pages and attributes. It can detect what page
+ * is active and assign classes to them for special treatment.
  *
  * ### Usage
  *
@@ -59,218 +59,236 @@ use Sleepy\Core\Module;
  * * Converted to 2.x API
  *
  * # Version 1.4
- * * Now automatically sets $_SERVER['SCRIPT_NAME'] as current page
+ * * Now automatically sets $_SERVER["SCRIPT_NAME"] as current page
  * * Added multiple hook points for manipulating navigations
  *
  * ## Version 1.2
  * * Added a track parameter
  *
- * @date September 29, 2014
- * @author Jaime A. Rodriguez <hi.i.am.jaime@gmail.com>
- * @version 2.0
- * @license  http://opensource.org/licenses/MIT
+ * @category Navigation
+ * @package  Module\Navigation
+ * @author   Jaime Rodriguez <hi.i.am.jaime@gmail.com>
+ * @license  https://opensource.org/licenses/MIT MIT
+ * @link     http://sleepymustache.com
  */
-class Builder extends Module 
+class Builder extends Module
 {
-  public $hooks = [];
-  
-  /**
-   * string Use this string to determine currently active page
-   * @private
-   */
-  private $current;
+    /**
+     * The array of hooks this module attaches to
+     *
+     * @var mixed[]
+     */
+    public $hooks = [];
 
-  /**
-   * mixed Navigation data
-   */
-  private $data;
+    /**
+     * Use this string to determine currently active page
+     *
+     * @var string
+     * @private
+     */
+    private $_current;
 
-  /**
-   * mixed Level
-   */
-  private $_level = 0;
+    /**
+     * Navigation data
+     *
+     * @var mixed[]
+     * @private
+     */
+    private $_data;
 
-  /**
-   * Constructor
-   * @param string $json json data containing the Navigation data
-   */
-  public function __construct($json='') 
-  {
-    if (!is_object($json)) 
+    /**
+     * Level
+     *
+     * @var int
+     * @private
+     */
+    private $_level = 0;
+
+    /**
+     * Constructor
+     *
+     * @param string $json json data containing the Navigation data
+     */
+    public function __construct($json="")
     {
-      if (class_exists('\Sleepy\Hook')) 
-      {
-        $json = \Sleepy\Hook::addFilter('navigation_raw_json', $json);
-      }
+        if (!is_object($json)) {
+            if (class_exists("\Sleepy\Hook")) {
+                $json = \Sleepy\Hook::addFilter("navigation_raw_json", $json);
+            }
 
-      $json = json_decode($json);
-    }
-
-    if (class_exists('\Sleepy\Hook')) 
-    {
-      $json = \Sleepy\Hook::addFilter('navigation_rendered_json', $json);
-    }
-
-    $this->data = $json;
-    $this->setCurrent($_SERVER['SCRIPT_NAME']);
-  }
-
-  /**
-   * Is this page or its children an active page?
-   * @param  object  $page An object containing page data
-   * @return int     0=none;1=active;2=activeChild
-   * @private
-   */
-  private function hasActive($page) 
-  {
-    // are there subpages? check those too...
-    if (isset($page->pages)) 
-    {
-      foreach ($page->pages as $subPage) 
-      {
-        if ($this->hasActive($subPage)) 
-        {
-          return 2;
-        }
-      }
-    }
-
-    // can we find a match?
-    if (substr($page->link, strlen($page->link) * -1) === $this->current) 
-    {
-      if (class_exists('\Sleepy\Hook')) 
-      {
-        \Sleepy\Hook::addAction('navigation_has_active');
-      }
-
-      return 1;
-    }
-
-    // no match...
-    if (class_exists('\Sleepy\Hook')) 
-    {
-      \Sleepy\Hook::addAction('navigation_no_active');
-    }
-
-    return 0;
-  }
-
-  /**
-   * Renders the $pages as an unordered list
-   * @param  object $pages the page data
-   * @return string        The string containing the unordered list
-   */
-  private function renderNav($pages, $class="") 
-  {
-    $this->_level = $this->_level + 1;
-    $buffer = array();
-
-    if ($this->_level > 1) {
-      $class = "submenu " . $class;
-    } else {
-      $class = "menu " . $class;
-    }
-
-    $class = trim($class);
-
-    $buffer[] = "<ul class=\"{$class}\">";
-
-    foreach ($pages as $page) 
-    {
-      if (class_exists('\Sleepy\Hook')) 
-      {
-        $page = \Sleepy\Hook::addFilter('navigation_page', $page);
-
-        if (!empty($page->id)) 
-        {
-          $page = \Sleepy\Hook::addFilter('navigation_page_' . $page->id, $page);
-        }
-      }
-
-      if (!isset($page->class)) 
-      {
-        $page->class = "";
-      }
-
-      if (isset($page->pages)) 
-      {
-        $page->class = $page->class . " has-children";
-      }
-
-      $active     = $this->hasActive($page);
-      $classy     = (!empty($page->class))  ? true                             : false;
-      $track      = (!empty($page->track))  ? "data-track=\"{$page->track}\" " : "";
-      $id         = (!empty($page->id))     ? "id=\"{$page->id}\" "            : "";
-      $rel        = (!empty($page->rel))    ? "rel=\"{$page->rel}\" "          : "";
-      $target     = (!empty($page->target)) ? "target=\"{$page->target}\" "    : "";
-      $href       = (!empty($page->link))   ? "href=\"{$page->link}\" "        : "";
-      $attributes = trim($id . $track . $rel . $target . $href);
-
-      $buffer[] = "<li";
-
-      if ($active || $classy) 
-      {
-        $buffer[] = " class=\"";
-
-        switch ($active) 
-        {
-        case 1:
-          $page->class = $page->class . " active";
-          break;
-        case 2:
-          $page->class = $page->class . " active-child";
+            $json = json_decode($json);
         }
 
-        $buffer[] = trim($page->class);
+        if (class_exists("\Sleepy\Hook")) {
+            $json = \Sleepy\Hook::addFilter("navigation_rendered_json", $json);
+        }
 
-        $buffer[] = "\"";
-      }
-
-      $buffer[] = ">";
-
-      $buffer[] = "<a {$attributes}>{$page->title}</a>";
-
-      if (isset($page->pages)) 
-      {
-        $buffer[] = $this->renderNav($page->pages);
-      }
-
-      $buffer[] = "</li>";
+        $this->data = $json;
+        $this->setCurrent($_SERVER["SCRIPT_NAME"]);
     }
 
-    $buffer[] = "</ul>";
-
-    return implode("", $buffer);
-  }
-
-  /**
-   * Renders the Navigation
-   * @return string The rendered navigation
-   */
-  public function show($class="") 
-  {
-    $toggle = "<span class=\"toggle\"></span>";
-    $rendered = $toggle . $this->renderNav($this->data->pages, $class);
-
-    if (class_exists('\Sleepy\Hook')) 
+    /**
+     * Is this page or its children an active page?
+     *
+     * @param  object  $page An object containing page data
+     *
+     * @return int     0=none;1=active;2=activeChild
+     * @private
+     */
+    private function hasActive($page)
     {
-      $rendered = \Sleepy\Hook::addFilter('navigation_rendered', $rendered);
+        // are there subpages? check those too...
+        if (isset($page->pages)) {
+            foreach ($page->pages as $subPage) {
+                if ($this->hasActive($subPage)) {
+                    return 2;
+                }
+            }
+        }
+
+        // can we find a match?
+        if (substr($page->link, strlen($page->link) * -1) === $this->current) {
+            if (class_exists("\Sleepy\Hook")) {
+                \Sleepy\Hook::addAction("navigation_has_active");
+            }
+
+            return 1;
+        }
+
+        // no match...
+        if (class_exists("\Sleepy\Hook")) {
+            \Sleepy\Hook::addAction("navigation_no_active");
+        }
+
+        return 0;
     }
 
-    return $rendered;
-  }
-
-  /**
-   * Sets the current page search string
-   * @param string $string A string used to determine if a page is current
-   */
-  public function setCurrent($string) 
-  {
-    $this->current = str_replace(@URLBASE, "/", str_replace("index.php", "", $string));
-
-    if (class_exists('\Sleepy\Hook')) 
+    /**
+     * Renders the $pages as an unordered list
+     *
+     * @param  object $pages the page data
+     *
+     * @return string        The string containing the unordered list
+     */
+    private function _renderNav($pages, $class="")
     {
-      $this->current = \Sleepy\Hook::addFilter('navigation_current_page', $this->current);
+        $this->_level = $this->_level + 1;
+        $buffer = array();
+
+        if ($this->_level > 1) {
+            $class = "submenu " . $class;
+        } else {
+            $class = "menu " . $class;
+        }
+
+        $class = trim($class);
+        $buffer[] = "<ul class=\"{$class}\">";
+
+        foreach ($pages as $page) {
+            if (class_exists("\Sleepy\Hook")) {
+                $page = \Sleepy\Hook::addFilter("navigation_page", $page);
+
+                if (!empty($page->id)) {
+                    $page = \Sleepy\Hook::addFilter("navigation_page_" . $page->id, $page);
+                }
+            }
+
+            if (!isset($page->class)) {
+                $page->class = "";
+            }
+
+            if (isset($page->pages)) {
+                $page->class = $page->class . " has-children";
+            }
+
+            $active = $this->hasActive($page);
+            $classy
+                = (!empty($page->class))
+                ? true
+                : false;
+            $track
+                = (!empty($page->track))
+                ? "data-track=\"{$page->track}\" "
+                : "";
+            $id
+                = (!empty($page->id))
+                ? "id=\"{$page->id}\" "
+                : "";
+            $rel
+                = (!empty($page->rel))
+                ? "rel=\"{$page->rel}\" "
+                : "";
+            $target
+                = (!empty($page->target))
+                ? "target=\"{$page->target}\" "
+                : "";
+            $href
+                = (!empty($page->link))
+                ? "href=\"{$page->link}\" "
+                : "";
+            $attributes = trim($id . $track . $rel . $target . $href);
+            $buffer[] = "<li";
+
+            if ($active || $classy) {
+                $buffer[] = " class=\"";
+
+                switch ($active) {
+                case 1:
+                    $page->class = $page->class . " active";
+                    break;
+                case 2:
+                    $page->class = $page->class . " active-child";
+                }
+
+                $buffer[] = trim($page->class);
+                $buffer[] = "\"";
+            }
+
+            $buffer[] = ">";
+            $buffer[] = "<a {$attributes}>{$page->title}</a>";
+
+            if (isset($page->pages)) {
+                $buffer[] = $this->_renderNav($page->pages);
+            }
+
+            $buffer[] = "</li>";
+        }
+
+        $buffer[] = "</ul>";
+
+        return implode("", $buffer);
     }
-  }
+
+    /**
+     * Renders the Navigation
+     * @return string The rendered navigation
+     */
+    public function show($class="")
+    {
+        $toggle = "<span class=\"toggle\"></span>";
+        $rendered = $toggle . $this->_renderNav($this->data->pages, $class);
+
+        if (class_exists("\Sleepy\Hook")) {
+            $rendered = \Sleepy\Hook::addFilter("navigation_rendered", $rendered);
+        }
+
+        return $rendered;
+    }
+
+    /**
+     * Sets the current page search string
+     * @param string $string A string used to determine if a page is current
+     */
+    public function setCurrent($string)
+    {
+        $this->current = str_replace(
+            @URLBASE,
+            "/",
+            str_replace("index.php", "", $string)
+        );
+
+        if (class_exists("\Sleepy\Hook")) {
+            $this->current = \Sleepy\Hook::addFilter("navigation_current_page", $this->current);
+        }
+    }
 }
