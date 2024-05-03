@@ -47,7 +47,7 @@ Creates a Navigation UL based on a JSON file. Uses JSON to structure navigation 
 
 ### Version 1.4
 
-* Now automatically sets $_SERVER['SCRIPT_NAME'] as current page
+* Now automatically sets $_SERVER["SCRIPT_NAME"] as current page
 * Added multiple hook points for manipulating navigations
 
 ### Version 1.2
